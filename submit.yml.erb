@@ -1,0 +1,89 @@
+<%
+   pwd_cfg = "c.ServerApp.password=u\'sha1:${SALT}:${PASSWORD_SHA1}\'"
+   host_port_cfg = "c.ServerApp.base_url=\'/node/${HOST_CFG}/${PORT_CFG}/\'"
+
+   configmap_filename = "ondemand_config.py"
+   configmap_data = "c.NotebookApp.port = 8080"
+   utility_img = "ghcr.io/nesi/training-environment-k8s-utils:v0.1.0"
+
+   user = OodSupport::User.new
+
+   services_node = Resolv.getaddress("servicesnode")
+%>
+---
+script:
+  accounting_id: "<%= account %>"
+  wall_time: "<%= wall_time.to_i * 3600 %>"
+  native:
+    container:
+      name: "nextflow"
+      image: "ghcr.io/nesi/training-environment-jupyter-intronextflow-app:v0.1.0"
+      command: ["/bin/bash","-l","<%= staged_root %>/job_script_content.sh"]
+      working_dir: "<%= Etc.getpwnam(ENV['USER']).dir %>"
+      restart_policy: 'OnFailure'
+      env:
+        NB_UID: "<%= user.uid %>"
+        NB_USER: "<%= user.name %>"
+        NB_GID: "<%= user.group.id %>"
+        HOME: "<%= user.home %>"
+        LOG_DIR: "<%= staged_root %>"
+        SHELL: "/bin/bash"
+      port: "8080"
+      cpu: "<%= cpu %>"
+      memory: "<%= memory %>Gi"
+    mounts:
+      - type: nfs
+        name: home
+        host: <%= services_node %>
+        path: /srv/homes
+        destination_path: /home/shared
+      - type: host
+        name: nslcd-socket
+        host_type: Socket
+        path: /var/run/nslcd/socket
+        destination_path: /var/run/nslcd/socket
+      - type: host
+        name: nsswitch-conf
+        host_type: File
+        path: /etc/nsswitch.conf
+        destination_path: /etc/nsswitch.conf
+      - type: host
+        name: subuid
+        host_type: File
+        path: /etc/subuid
+        destination_path: /etc/subuid
+      - type: host
+        name: subgid
+        host_type: File
+        path: /etc/subgid
+        destination_path: /etc/subgid
+    configmap:
+      files:
+        - filename: "<%= configmap_filename %>"
+          data: |
+            c.ServerApp.ip = '0.0.0.0'
+            c.ServerApp.port = 8080
+            c.ServerApp.port_retries = 0
+            c.ServerApp.open_browser = False
+            c.ServerApp.allow_origin = '*'
+            c.ServerApp.root_dir = '<%= user.home %>'
+            c.ServerApp.disable_check_xsrf = True
+          mount_path: '/ood'
+    init_containers:
+    - name: "init-secret"
+      image: "<%= utility_img %>"
+      command: 
+      - "/bin/save_passwd_as_secret"
+      - "user-<%= user.name %>"
+    - name: "add-passwd-to-cfg"
+      image: "<%= utility_img %>"
+      command:
+      - "/bin/bash"
+      - "-c"
+      - "source /bin/passwd_from_secret; source /bin/create_salt_and_sha1; /bin/add_line_to_configmap \\\"<%= pwd_cfg %>\\\" <%= configmap_filename %>"
+    - name: "add-hostport-to-cfg"
+      image: "<%= utility_img %>"
+      command:
+      - "/bin/bash"
+      - "-c"
+      - "source /bin/find_host_port; /bin/add_line_to_configmap \\\"<%= host_port_cfg %>\\\" <%= configmap_filename %>"

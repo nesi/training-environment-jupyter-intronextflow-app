@@ -1,0 +1,17 @@
+---
+cluster: "my-k8s-cluster"
+
+form:
+  - cpu
+  - memory
+  - wall_time
+
+attributes:
+  cpu: 2
+  memory: 4
+  wall_time:
+    widget: number_field
+    label: "Hours"
+    min: 4
+    max: 12
+    value: 8
