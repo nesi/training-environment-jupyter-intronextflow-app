@@ -45,8 +45,10 @@ RUN add-apt-repository -y ppa:apptainer/ppa \
     && apt install -y apptainer-suid \
     && rm -rf /var/lib/apt/lists/*
 
-#install nextflow
-RUN curl -s https://get.nextflow.io | bash \
+#install nextflow : Download -all from GH to workaround https://github.com/nesi/training-environment-jupyter-intronextflow-app/issues/1
+#RUN curl -s https://get.nextflow.io | bash \
+RUN wget -c https://github.com/nextflow-io/nextflow/releases/download/v23.10.1/nextflow-23.10.1-all \
+    && mv nextflow-23.10.1-all nextflow \ 
     && chmod +x nextflow \
     && mv nextflow /usr/local/bin \
     && chmod a+rw /usr/local/bin/nextflow
