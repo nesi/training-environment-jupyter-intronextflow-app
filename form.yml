@@ -7,8 +7,8 @@ form:
   - wall_time
 
 attributes:
-  cpu: 2
-  memory: 4
+  cpu: 4
+  memory: 8
   wall_time:
     widget: number_field
     label: "Hours"
