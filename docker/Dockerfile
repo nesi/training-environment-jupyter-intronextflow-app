@@ -47,8 +47,8 @@ RUN add-apt-repository -y ppa:apptainer/ppa \
 
 #install nextflow : Download -all from GH to workaround https://github.com/nesi/training-environment-jupyter-intronextflow-app/issues/1
 #RUN curl -s https://get.nextflow.io | bash \
-RUN wget -c https://github.com/nextflow-io/nextflow/releases/download/v23.10.1/nextflow-23.10.1-all \
-    && mv nextflow-23.10.1-all nextflow \ 
+RUN wget -c https://github.com/nextflow-io/nextflow/releases/download/v24.04.2/nextflow-24.04.2-all \
+    && mv nextflow-24.04.2-all nextflow \ 
     && chmod +x nextflow \
     && mv nextflow /usr/local/bin \
     && chmod a+rw /usr/local/bin/nextflow
@@ -56,3 +56,4 @@ RUN wget -c https://github.com/nextflow-io/nextflow/releases/download/v23.10.1/n
 # install jupyterlab and nf-core
 RUN pip3 --no-cache-dir install jupyterlab
 RUN pip3 --no-cache-dir install nf-core
+RUN pip3 --no-cache-dir install graphviz

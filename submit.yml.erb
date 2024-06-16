@@ -17,7 +17,7 @@ script:
   native:
     container:
       name: "nextflow"
-      image: "ghcr.io/nesi/training-environment-jupyter-intronextflow-app:v0.2.0"
+      image: "ghcr.io/nesi/training-environment-jupyter-intronextflow-app:v0.3.0"
       command: ["/bin/bash","-l","<%= staged_root %>/job_script_content.sh"]
       working_dir: "<%= Etc.getpwnam(ENV['USER']).dir %>"
       restart_policy: 'OnFailure'
